@@ -115,6 +115,21 @@ simulate_community <- function(cparams){
   })
 }
 
+sim2infDays <- function(sim_pop){
+  #get number of infectious and total number
+  sim_pop <- sim_pop %>%
+    mutate(nInfectious = ifelse(InfectionType == 0, DaysEarlyInf + DaysLateInf, DaysEarlyInf))
+  asx <- sim_pop[sim_pop$InfectionType == 0,] %>%
+    mutate(nAsx_early = ceiling(ifelse(DaysEarlyInf < InfWorkDays, DaysEarlyInf, InfWorkDays)),
+           nAsx_late = InfWorkDays - nAsx_early)
+  nAsx_early <- sum(asx$nAsx_early)
+  nAsx_late <- sum(asx$nAsx_late)
+  nSx <- sum(sim_pop[sim_pop$InfectionType == 1,"InfWorkDays"])
+  #return(c((nAsxTotal - nAsx)/(nAsxTotal+nSxTotal),
+  #         (nSxTotal - nSx)/(nAsxTotal+nSxTotal)))
+  return(c(nAsx_early, nAsx_late, nSx))
+}
+
 update_state <- function(x){
   x[["DayInTrue"]] <- x[["DayInTrue"]] + 1
   if(x[["State"]] == 1 & x[["DayInTrue"]] > x[["DaysExposed"]]){ #if exposed
@@ -307,14 +322,14 @@ run_sim <- function(sparams){
                                community_state = community_state
                              ))
     }
-    write.csv(sim_pop, paste0("data/workers/sim_pop_", risk.multi, "_", nDelay, "_", alpha.a, "_", testingFreq,"_", sens_type, "_", r,".csv"))
-    return(sum(sim_pop$InfWorkDays, na.rm = TRUE))
+    #write.csv(sim_pop, paste0("data/workers/sim_pop_", risk.multi, "_", nDelay, "_", alpha.a, "_", testingFreq,"_", sens_type, "_", r,".csv"))
+    #return(sum(sim_pop$InfWorkDays, na.rm = TRUE))
+    return(sim2infDays(sim_pop))
   })
 }
 
 tf_array <- c(1:5, 7, seq(10,30,5), 1000)
-tfMatrix <- matrix(0, nrow=length(tf_array),ncol=n_reps)
-rownames(tfMatrix) <- as.character(tf_array)
+tfMatrix <- as.data.frame(matrix(0, ncol=length(tf_array)*3,nrow=n_reps))
 
 sens_by_day <- read.csv("data/sens_by_day_ci.csv", header = TRUE) %>%
   select(fnr_med, fnr_lb, fnr_ub)
@@ -326,6 +341,8 @@ if(sens_type == "upper") p_fn <- sens_by_day$fnr_ub/100
 if(sens_type == "median") p_fn <- sens_by_day$fnr_med/100
 if(sens_type == "lower") p_fn <- sens_by_day$fnr_lb/100
 if(sens_type == "perfect") p_fn <- rep(0,nrow(sens_by_day))
+if(sens_type == "random") p_fn <- unlist(apply(sens_by_day, 1, function(x) rtruncnorm(1, x[["fnr_lb"]], x[["fnr_ub"]], x[["fnr_med"]], 
+                                                                               (x[["fnr_ub"]] - x[["fnr_med"]])/2)))/100
 
 plan(multiprocess, workers = availableCores(), gc = TRUE) ## Parallelize using 15 processes
 
@@ -334,6 +351,7 @@ days.incubation.array <- incubation_fxn(n_reps)
 days.earlyInfection.array <- early_infectious_fxn(n_reps)
 days.lateInfection.array <- late_infectious_fxn(n_reps)
 
+counter <- 0
 for(tf in tf_array){
   print(paste0("tf: ",tf))
   x <- future_sapply(1:n_reps, function(r) run_sim(
@@ -356,7 +374,13 @@ for(tf in tf_array){
       days.earlyInfection = days.earlyInfection.array[r],
       days.lateInfection = days.lateInfection.array[r]
     )))
-  tfMatrix[as.character(tf), ] <- x
+  tfMatrix[,(3*counter+1):(3*(counter+1))] <- t(x)
+  colnames(tfMatrix)[(3*counter+1):(3*(counter+1))] <- paste0(c("asxEarly","asxLate","sxEarly"),"_",tf)
+  counter <- counter + 1
 }
+
+out_fi <- paste0(paste("data/sims", risk.multi, nDelay, alpha.a, sens_type, offset, sep = "_"), ".csv")
+print(paste0("Writing to ", out_fi))
+write.csv(tfMatrix, out_fi)
 
 future:::ClusterRegistry("stop")
