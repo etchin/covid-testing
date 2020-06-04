@@ -307,7 +307,7 @@ run_sim <- function(sparams){
                                community_state = community_state
                              ))
     }
-    write.csv(sim_pop, paste0("data/workers/sim_pop_", risk.multi, "_", nDelay, "_", alpha.a, "_", testingFreq,"_", r,".csv"))
+    write.csv(sim_pop, paste0("data/workers/sim_pop_", risk.multi, "_", nDelay, "_", alpha.a, "_", testingFreq,"_", sens_type, "_", r,".csv"))
     return(sum(sim_pop$InfWorkDays, na.rm = TRUE))
   })
 }
@@ -322,9 +322,9 @@ sens_by_day <- read.csv("data/sens_by_day_ci.csv", header = TRUE) %>%
 sens_by_day[1:7,] <- sens_by_day[8,]
 sens_by_day <- sens_by_day[3:nrow(sens_by_day),] # only able to get a positive test during early infectious stage at the earliest
 
-if(sens_type == "upper") p_fn <- sens_by_day$fnr_ub
-if(sens_type == "median") p_fn <- sens_by_day$fnr_med
-if(sens_type == "lower") p_fn <- sens_by_day$fnr_lb
+if(sens_type == "upper") p_fn <- sens_by_day$fnr_ub/100
+if(sens_type == "median") p_fn <- sens_by_day$fnr_med/100
+if(sens_type == "lower") p_fn <- sens_by_day$fnr_lb/100
 if(sens_type == "perfect") p_fn <- rep(0,nrow(sens_by_day))
 
 plan(multiprocess, workers = availableCores(), gc = TRUE) ## Parallelize using 15 processes
@@ -350,6 +350,7 @@ for(tf in tf_array){
       N_pop = 100,
       n.community = 100000,
       p_sens = 1-p_fn,
+      sens_type = sens_type,
       r = r + n_reps*offset,
       days.incubation = days.incubation.array[r],
       days.earlyInfection = days.earlyInfection.array[r],
@@ -357,9 +358,5 @@ for(tf in tf_array){
     )))
   tfMatrix[as.character(tf), ] <- x
 }
-
-out_fi <- paste0("data/sim_", risk.multi, "_", nDelay,"_", alpha.a, "_", offset, ".csv")
-print(paste0("Writing ", out_fi))
-write_csv(as.data.frame(tfMatrix), out_fi)
 
 future:::ClusterRegistry("stop")
