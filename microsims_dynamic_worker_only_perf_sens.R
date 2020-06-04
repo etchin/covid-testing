@@ -306,7 +306,7 @@ run_sim <- function(sparams){
                                community_state = community_state
                              ))
     }
-    write.csv(sim_pop, paste0("data/workers/sim_pop_", risk.multi, "_", nDelay, "_", alpha.a, "_", testingFreq,"_", r,".csv"))
+    write.csv(sim_pop, paste0("data/workers_ps/sim_pop_", risk.multi, "_", nDelay, "_", alpha.a, "_", testingFreq,"_", r,".csv"))
     return(sum(sim_pop$InfWorkDays, na.rm = TRUE))
   })
 }
@@ -342,7 +342,7 @@ for(tf in tf_array){
       nDelay = nDelay,
       N_pop = 100,
       n.community = 100000,
-      p_sens = 1-sens_by_day$fn,
+      p_sens = rep(1,nrow(sens_by_day)), #1-sens_by_day$fn,
       r = r + n_reps*offset,
       days.incubation = days.incubation.array[r],
       days.earlyInfection = days.earlyInfection.array[r],
@@ -351,7 +351,7 @@ for(tf in tf_array){
   tfMatrix[as.character(tf), ] <- x
 }
 
-out_fi <- paste0("data/sim_", risk.multi, "_", nDelay,"_", alpha.a, "_", offset, ".csv")
+out_fi <- paste0("data/simPS_", risk.multi, "_", nDelay,"_", alpha.a "_", offset, ".csv")
 print(paste0("Writing ", out_fi))
 write_csv(as.data.frame(tfMatrix), out_fi)
 
