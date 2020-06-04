@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
-# Rscript microsims_dynamic_worker_only.R <n_sims> <risk.multiplier> <testingDelay>
+# Rscript microsims_dynamic_worker_only.R <n_sims> <risk.multiplier> <testingDelay> <alpha.late> <sensitivity type> <offset>
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Title: Universal testing to reduce the risk of returning to work: a simulation analysis 
@@ -66,7 +66,8 @@ beta.ec <- R0.ec/(n.contacts*days.earlyInfection)
 nDelay <- as.numeric(args[3])
 alpha.a <- 0.5
 alpha.late <- as.numeric(args[4])
-offset <- as.integer(args[5])
+sens_type <- args[5]
+offset <- as.integer(args[6])
 
 # incubation parameters from
 # Li, Q. et al. Early transmission dynamics in Wuhan, China, of novel coronavirus-infected pneumonia. N. Engl. J. Med. 382, 1199–1207 (2020).
@@ -315,11 +316,16 @@ tf_array <- c(1:5, 7, seq(10,30,5), 1000)
 tfMatrix <- matrix(0, nrow=length(tf_array),ncol=n_reps)
 rownames(tfMatrix) <- as.character(tf_array)
 
-sens_by_day <- read.csv("data/digitised_sens_graph.csv", header = FALSE)
-colnames(sens_by_day) <- c("daySinceExposure", "fn")
-sens_by_day$daySinceExposure <- round(sens_by_day$daySinceExposure)
-sens_by_day[1:7,"fn"] <- sens_by_day$fn[8]
+sens_by_day <- read.csv("data/sens_by_day_ci.csv", header = TRUE) %>%
+  select(fnr_med, fnr_lb, fnr_ub)
+
+sens_by_day[1:7,] <- sens_by_day[8,]
 sens_by_day <- sens_by_day[3:nrow(sens_by_day),] # only able to get a positive test during early infectious stage at the earliest
+
+if(sens_type == "upper") p_fn <- sens_by_day$fnr_ub
+if(sens_type == "median") p_fn <- sens_by_day$fnr_med
+if(sens_type == "lower") p_fn <- sens_by_day$fnr_lb
+if(sens_type == "perfect") p_fn <- rep(0,nrow(sens_by_day))
 
 plan(multiprocess, workers = availableCores(), gc = TRUE) ## Parallelize using 15 processes
 
@@ -343,7 +349,7 @@ for(tf in tf_array){
       nDelay = nDelay,
       N_pop = 100,
       n.community = 100000,
-      p_sens = 1-sens_by_day$fn,
+      p_sens = 1-p_fn,
       r = r + n_reps*offset,
       days.incubation = days.incubation.array[r],
       days.earlyInfection = days.earlyInfection.array[r],
