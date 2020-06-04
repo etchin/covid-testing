@@ -318,6 +318,7 @@ rownames(tfMatrix) <- as.character(tf_array)
 sens_by_day <- read.csv("data/digitised_sens_graph.csv", header = FALSE)
 colnames(sens_by_day) <- c("daySinceExposure", "fn")
 sens_by_day$daySinceExposure <- round(sens_by_day$daySinceExposure)
+sens_by_day[1:7,"fn"] <- sens_by_day$fn[8]
 sens_by_day <- sens_by_day[3:nrow(sens_by_day),] # only able to get a positive test during early infectious stage at the earliest
 
 plan(multiprocess, workers = availableCores(), gc = TRUE) ## Parallelize using 15 processes
