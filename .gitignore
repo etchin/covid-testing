@@ -1,2 +1,4 @@
-data
+*.out
+data/work*
 *.sh
+logs
