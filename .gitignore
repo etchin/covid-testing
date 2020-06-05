@@ -2,4 +2,4 @@
 data/work*
 *.sh
 logs
-data/sim_*
+data/sims_*
