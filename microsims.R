@@ -66,6 +66,7 @@ beta.ec <- R0.ec/(n.contacts*days.earlyInfection)
 nDelay <- as.numeric(args[3])
 alpha.a <- 0.5
 alpha.late <- as.numeric(args[4])
+alpha.late.c <- 0.25 #discount factor of late clinical infectious interacting with the community
 sens_type <- args[5]
 offset <- as.integer(args[7])
 
@@ -95,7 +96,7 @@ seir <- function(times, Y, parms){
     LC<-Y[6]
     R <- Y[7]
     dY <- vector(length=length(Y))
-    dY[1] <- -beta.t*n.contacts*(alpha.a*(ESC + alpha.late*LSC) + EC + alpha.late*LC)/sum(Y)*S #S
+    dY[1] <- -beta.t*n.contacts*(alpha.a*(ESC + alpha.late*LSC) + EC + alpha.late*alpha.late.c*LC)/sum(Y)*S #S
     dY[2] <-  -dY[1] - E/days.incubation #E
     dY[3] <- p.a/days.incubation*E - ESC/days.earlyInfection #ESC
     dY[4] <- ESC/days.earlyInfection - LSC/days.lateInfection #LSC
@@ -163,8 +164,8 @@ worker_calculate_infectiousness <- function(community.esc, community.lsc, commun
     #assume 75% of interactions come from patients and 25% comes from other workers
     asx <- sapply(1:m, function(i) 0.75*sum(lambda.cw*(community.esc + alpha.late*community.lsc)/community.n, na.rm = TRUE) + 
                     0.25*lambda.ww*(workers.esc + alpha.late*workers.lsc)/workers.n)
-    sx <- sapply(1:m, function(i) 0.75*sum(lambda.cw*(community.ec + alpha.late*community.lc)/community.n, na.rm = TRUE) + 
-                   0.25*lambda.ww*(workers.ec + alpha.late*workers.lc)/workers.n)
+    sx <- sapply(1:m, function(i) 0.75*sum(lambda.cw*(community.ec + alpha.late*alpha.late.c*community.lc)/community.n, na.rm = TRUE) + 
+                   0.25*lambda.ww*(workers.ec)/workers.n)
     asx[is.na(asx)] <- 0
     sx[is.na(sx)] <- 0
     p <- alpha.a*asx + sx
@@ -197,6 +198,9 @@ testing_sim <- function(sim_pop,
       lambda.cw = lambda.cw,
       lambda.ww = lambda.ww,
       p.a = p.a,
+      alpha.a = alpha.a,
+      alpha.late = alpha.late,
+      alpha.late.c = alpha.late.c,
       m = 1
     )
     
@@ -283,6 +287,7 @@ run_sim <- function(sparams){
                                                n.contacts = n.contacts,
                                                alpha.a = alpha.a,
                                                alpha.late = alpha.late,
+                                               alpha.late.c = alpha.late.c,
                                                p.a = p.a,
                                                n.community = n.community
                                                )) %>% as.data.frame() %>% select(-`time`)
@@ -313,6 +318,8 @@ run_sim <- function(sparams){
                                beta.t = beta.t,
                                n.contacts = n.contacts,
                                alpha.a = alpha.a,
+                               alpha.late = alpha.late,
+                               alpha.late.c = alpha.late.c,
                                p.a = p.a,
                                quarantineDays = quarantineDays,
                                testingFreq = testingFreq,
@@ -359,6 +366,8 @@ for(tf in tf_array){
       n.days = 300,
       beta.t = beta.ec,
       alpha.a = alpha.a,
+      alpha.late = alpha.late,
+      alpha.late.c = alpha.late.c,
       n.contacts = n.contacts,
       quarantineDays = quarantineDays,
       testingFreq = tf,
@@ -379,7 +388,7 @@ for(tf in tf_array){
   counter <- counter + 1
 }
 
-out_fi <- paste0(paste("data/sims", risk.multi, nDelay, alpha.a, sens_type, R0, offset, sep = "_"), ".csv")
+out_fi <- paste0(paste("data/sims", risk.multi, nDelay, alpha.a, sens_type, R0.ec, offset, sep = "_"), ".csv")
 print(paste0("Writing to ", out_fi))
 write.csv(tfMatrix, out_fi)
 
