@@ -153,7 +153,7 @@ calculate_new_worker_infections <- function(c.inf, w.inf, params){
   w <- worker_calculate_infectiousness(c.inf[1], c.inf[2], c.inf[3], c.inf[4], c.inf[5],
                                        w.inf[1], w.inf[2], w.inf[3], w.inf[4], w.inf[5],
                                        params)
-  return(w)
+  return(1-exp(-w))
 }
 
 #calculate for all workers
