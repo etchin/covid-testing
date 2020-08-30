@@ -6,7 +6,7 @@ library(dplyr)
 library(ggplot2)
 library(data.table)
 
-tfArray <- c(1:5,7,seq(10,30,5), 1000)
+tfArray <- c(1:5,7,seq(10,30,5), NA)
 
 find_ci_norm <- function(x,y){
   f.t.test <- t.test(x, y)
