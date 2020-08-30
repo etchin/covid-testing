@@ -60,7 +60,7 @@ testing_sim <- function(sim_pop,
     sim_pop[, State := apply(sim_pop, 1, function(x) update_state(x, t))]
     
     # Update infectious timelines
-    sim_pop[NewInfection==1, c("State","DayOfInfection") := list(1, t)]
+    sim_pop[NewInfection==1, c("State","DayOfInfection") := list(1, t + 1)]
     
     # Update quarantine day
     sim_pop[, DayInObs := ifelse(DayInObs <= days.quarantine & DayInObs > 0, DayInObs + 1, 0)]
@@ -77,7 +77,7 @@ run_sim <- function(sparams){
     col_fields <- c("ID", "InfectionType", "State",
                     "DaysIncubation","DaysSymptomatic",
                     "NewInfection","DayOfInfection","DayInObs",
-                    "DayOfDetection")
+                    "DayOfDetection","DayOfDetection_iwd")
     
     sim_pop <- as.data.frame(matrix(0,nrow=N_pop, ncol=length(col_fields)))
     colnames(sim_pop) <- col_fields
@@ -116,6 +116,8 @@ run_sim <- function(sparams){
     for(j in 1:n.days){
       # symptom screening
       sim_pop[DayInObs == 0 & InfectionType == 1 & State == 2, DayOfDetection := j]
+      sim_pop[DayInObs == 0 & InfectionType == 1 & State == 2 & DayOfDetection_iwd == 0,
+              DayOfDetection_iwd := j]
       
       if(j %in% test.days){
         # Test workers

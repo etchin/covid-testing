@@ -68,6 +68,8 @@ test_neg <- function(sim_pop, t, tparams){
 test_pop <- function(sim_pop, t, tparams){
   pids <- sim_pop[State %in% c(1,2) & DayOfDetection < DayOfInfection,ID]
   sim_pop[pids,] <- test_pos(sim_pop[pids,], t, tparams)
+  sim_pop[DayOfDetection == t + n.delay & DayOfDetection_iwd == 0 & DayOfInfection > 0, 
+          DayOfDetection_iwd := DayOfDetection]
   sim_pop[State == 0,] <- test_neg(sim_pop[State == 0,], t, tparams)
   rids <- sim_pop[State == 3 & DayOfDetection < DayOfInfection,ID]
   sim_pop[rids,] <- test_neg(sim_pop[rids,], t, tparams)

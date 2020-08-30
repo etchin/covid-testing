@@ -88,6 +88,7 @@ for(r in 1:nrow(param_sets)){
 }
 
 cum_red$R0 <- sapply(cum_red$risk, convert_risk_to_R0)
+tf_levels <- c("Daily",paste0(c(2:5,7,seq(10,25,5)), " days"), "Monthly")
 
 write.csv(cum_red, "reduction.csv")
 cum_red <- read_csv("reduction.csv")[,-1]
@@ -101,15 +102,6 @@ red_ci <- cum_red %>%
 
 write.csv(red_ci, "confidence_intervals_all.csv")
 
-convert_tf <- function(tf){
-  if(tf == 1) return("Daily")
-  if(tf == 30) return("Monthly")
-  if(tf == 1000) return("No testing")
-  return(paste0(tf, " days"))
-}
-
-tf_levels <- c("Daily",paste0(c(2:5,7,seq(10,25,5)), " days"), "Monthly")
-
 estimatedR <- cum_red %>%
   filter(outcome == "Infectiousness") %>%
   dplyr::mutate(R0_base = R0,
@@ -122,9 +114,8 @@ estimatedR <- cum_red %>%
   dplyr::select(test_freq, delay, sensitivity, sens_multiplier, starts_with("R0"))
 
 write.csv(estimatedR, "R0.csv")
-
 ggplot(estimatedR %>%
-         filter(delay == 1, sensitivity == "median", sens_multiplier == 1), 
+         filter(delay == 1, sensitivity == "random", sens_multiplier == 1), 
        aes(x = test_freq, y = R0, group = R0_base, fill = R0_base)) +
   geom_ribbon(aes(ymin = R0.Q1, ymax = R0.Q3), alpha= 0.75) +
   geom_line() +
@@ -134,7 +125,8 @@ ggplot(estimatedR %>%
                       guide = "legend") + 
   theme_minimal(base_size = 20) +
   xlab("Testing frequency (days)") +
-  ylab("R_0")
+  ylab("R_0") +
+  scale_x_continuous(breaks = c(0,10,20,30), labels = c("Daily","10","20","Monthly"))
 ggsave("figures/estimated_Re.pdf")
 
 

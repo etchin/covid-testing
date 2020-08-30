@@ -20,13 +20,13 @@ infectious_fxn <- function(ni1, ni2){
   return(d)
 }
 
-calc_infectiousness <- function(iwd, if_weights) sum(if_weights[1:iwd])
+calc_infectiousness <- function(iwd, if_weights)sum(c(0,if_weights)[1:(iwd+1)])
 
 sim2infDays <- function(sim_pop, if_weights, n.days){
   #get number of infectious and total number
   sim_pop_i <- sim_pop[DayOfInfection > 0]
-  sim_pop_i[,InfWorkDays := ifelse(DayOfDetection > DayOfInfection, 
-                                 DayOfDetection - DayOfInfection,
+  sim_pop_i[,InfWorkDays := ifelse(DayOfDetection_iwd >= DayOfInfection, 
+                                 DayOfDetection_iwd - DayOfInfection,
                                  pmin(DaysIncubation + DaysSymptomatic + DayOfInfection, n.days) - DayOfInfection)]
   sim_pop_i[,InfWorkDays := pmin(InfWorkDays, DaysIncubation + DaysSymptomatic)]
   sim_pop_i$infectiousness <- sapply(sim_pop_i$InfWorkDays, function(x) calc_infectiousness(x, if_weights))
@@ -38,8 +38,8 @@ update_state <- function(x, t){
   cols <- c("State","DayOfInfection","DaysIncubation","DaysSymptomatic")
   x <- as.numeric(x[cols])
   names(x) <- cols
-  if(x["State"]==1 & t > (x["DaysIncubation"] + x["DayOfInfection"])) return(2) # Late Infectious period
-  if(x["State"]==2 & t > (x["DaysIncubation"] + x["DaysSymptomatic"] + x["DayOfInfection"])) return(3) # Recovered
+  if(x["State"]==1 & t >= (x["DaysIncubation"] + x["DayOfInfection"])) return(2) # Late Infectious period
+  if(x["State"]==2 & t >= (x["DaysIncubation"] + x["DaysSymptomatic"] + x["DayOfInfection"])) return(3) # Recovered
   return(x["State"])
 }
 
