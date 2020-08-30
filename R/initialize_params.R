@@ -1,7 +1,7 @@
 states <- c("SU","IB","SX","R")
 n.states <- length(states)
 
-n_reps <- 5
+n_reps <- 50
 
 max_days_PCR_pos <- 25
 

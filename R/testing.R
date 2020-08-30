@@ -3,7 +3,7 @@ require(dplyr)
 library(fitdistrplus)
 source("R/initialize_params.R")
 
-load_test_sensitivity <- function(sens_type){
+load_test_sensitivity_raw <- function(sens_type){
   #False negative rate given day of infection
   #Modified from Kucirka et al. to remove Patient 13 from Danis et al.
 
@@ -28,6 +28,23 @@ load_test_sensitivity <- function(sens_type){
   sens[sens < 0] <- 0
   return(sens)
 }
+
+load_test_sensitivity <- function(sens_type){
+  #False negative rate given day of infection
+  #Modified from Kucirka et al. to remove Patient 13 from Danis et al.
+
+  sens_by_day <- read.csv("data/sens_by_day_corrected.csv", header = TRUE) %>%
+    dplyr::select(lower, median, upper)
+
+  if(sens_type == "lower") sens <- sens_by_day$lower
+  if(sens_type == "median") sens <- sens_by_day$median
+  if(sens_type == "upper") sens <- sens_by_day$upper
+  if(sens_type == "perfect") sens <- rep(1,nrow(sens_by_day))
+  if(sens_type == "random") sens <- apply(sens_by_day, 1, function(x) rtruncnorm(1, x[["lower"]], x[["median"]], x[["upper"]],
+                                                                                 (x[["upper"]] - x[["median"]])/2))
+  return(sens)
+}
+
 
 test_pos <- function(sim_pop, t, tparams){
   with(tparams,{
