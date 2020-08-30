@@ -3,3 +3,4 @@ data/work*
 *.sh
 logs
 data/sims_*
+.Rproj.user
