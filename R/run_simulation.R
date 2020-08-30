@@ -136,7 +136,8 @@ run_sim <- function(sparams){
                                p.a = p.a,
                                days.quarantine = days.quarantine,
                                if_weights = if_weights,
-                               p.community = p.community
+                               p.community = p.community,
+                               days.incubation = days.incubation
                              ))
     }
     return(sim2infDays(sim_pop, if_weights, n.days))
