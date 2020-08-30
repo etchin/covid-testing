@@ -14,7 +14,8 @@ incubation_fxn <- function(n) return(round(rlnorm(n, 1.434065, 0.6612))) # log n
 symptomatic_fxn <- function(n) return(rep(20, n))
 
 infectious_fxn <- function(ni1, ni2){
-  d <- dgamma(seq(-(ni1-1),ni2) + 12.27248, 20.51651, 1.592124)
+  mso <- rtruncnorm(1, mean = 12.27248, a = 9, b = 15, sd = 2)
+  d <- dgamma(seq(-(ni1-1),ni2) + mso, 20.51651, 1.592124)
   d <- d / sum(d)
   names(d) <- c(paste0("e", 1:ni1), paste0("l", 1:ni2))
   return(d)

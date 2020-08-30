@@ -33,7 +33,9 @@ testing_sim <- function(sim_pop,
     workers.inf <- c(n.w.asx, n.w.sx, n.w)
     
     #define infectious period as -4 days to 7 days
-    if_weights_c <- infectious_fxn(4,7)
+    start.incubation <- days.incubation - 4
+    if(start.incubation < 1) start.incubation <- 1
+    if_weights_c <- if_weights[start.incubation:(start.incubation + days.incubation + 7 - 1)]
     n.community <- 100000
     c.inf <- sample(if_weights_c, sum(rbinom(n.community, 1, p.community)), replace = TRUE)
     c.asx <- rbinom(length(c.inf), 1, p.a)

@@ -109,7 +109,9 @@ estimatedR <- cum_red %>%
                 R0.upper = R0_base*(100-Upper)/100,
                 R0.lower = R0_base*(100-Lower)/100,
                 R0.Q3 = R0_base*(100-Q1)/100,
-                R0.Q1 = R0_base*(100-Q3)/100
+                R0.Q1 = R0_base*(100-Q3)/100,
+                R0.Min = R0_base*(100-Max)/100,
+                R0.Max = R0_base*(100-Min)/100
   ) %>%
   dplyr::select(test_freq, delay, sensitivity, sens_multiplier, starts_with("R0"))
 
