@@ -33,14 +33,21 @@ testing_sim <- function(sim_pop,
     workers.inf <- c(n.w.asx, n.w.sx, n.w)
     
     #define infectious period as -4 days to 7 days
-    start.incubation <- days.incubation - 4
+    c.days.symptomatic <- 7
+    c.days.incubation <- 4
+    start.incubation <- days.incubation - c.days.incubation
     if(start.incubation < 1) start.incubation <- 1
-    if_weights_c <- if_weights[start.incubation:(start.incubation + days.incubation + 7 - 1)]
+    if_weights_c <- if_weights[start.incubation:(start.incubation + days.incubation + c.days.symptomatic - 1)]
     if_weights_c <- if_weights_c / sum(if_weights_c)
     n.community <- 100000
     c.inf <- sample(if_weights_c, sum(rbinom(n.community, 1, p.community)), replace = TRUE)
     c.asx <- rbinom(length(c.inf), 1, p.a)
-    community.inf <- c(sum(c.inf[c.asx == 1]), sum(c.inf[c.asx == 0]), n.community) / n.community
+    community.asx <- sum(c.inf[c.asx == 1])
+    community.sx <- c.inf[c.asx == 0]
+    community.sx1 <- community.sx[grepl('e', names(community.sx))]
+    community.sx2 <- community.sx[grepl('l', names(community.sx))]
+    community.sx <- sum(c(sum(community.sx1), alpha.late.c*sum(community.sx2)), na.rm = TRUE)
+    community.inf <- c(community.asx, community.sx, n.community) / n.community
     
     lambda.ww <- beta.t*n.contacts
     lambda.cw <- lambda.ww*risk.multi
