@@ -90,8 +90,8 @@ for(r in 1:nrow(param_sets)){
 cum_red$R0 <- sapply(cum_red$risk, convert_risk_to_R0)
 tf_levels <- c("Daily",paste0(c(2:5,7,seq(10,25,5)), " days"), "Monthly")
 
-write.csv(cum_red, "reduction.csv")
-cum_red <- read_csv("reduction.csv")[,-1]
+write.csv(cum_red, "figures/reduction.csv")
+cum_red <- read_csv("figures/reduction.csv")[,-1]
 
 red_ci <- cum_red %>%
   filter(outcome == "Infectiousness") %>%
@@ -100,7 +100,7 @@ red_ci <- cum_red %>%
                      ",", round(Lower,1), ")")) %>% 
   dplyr::select(test_freq, R0, delay, sensitivity, sens_multiplier, CI)
 
-write.csv(red_ci, "confidence_intervals_all.csv")
+write.csv(red_ci, "figures/confidence_intervals_all.csv")
 
 estimatedR <- cum_red %>%
   filter(outcome == "Infectiousness") %>%
@@ -115,7 +115,7 @@ estimatedR <- cum_red %>%
   ) %>%
   dplyr::select(test_freq, delay, sensitivity, sens_multiplier, starts_with("R0"))
 
-write.csv(estimatedR, "R0.csv")
+write.csv(estimatedR, "figures/R0.csv")
 ggplot(estimatedR %>%
          filter(delay == 1, sensitivity == "random", sens_multiplier == 1), 
        aes(x = test_freq, y = R0, group = R0_base, fill = R0_base)) +
@@ -131,6 +131,6 @@ ggplot(estimatedR %>%
   ylab(expression(R[0])) +
   labs(fill = expression(atop("Workplace R" [0],"under no testing"))) +
   scale_x_continuous(breaks = c(0,10,20,30), labels = c("Daily","10","20","Monthly"))
-ggsave("figures/estimated_Re.pdf", width = 8, height = 4)
+ggsave("figures/estimated_R0.pdf", width = 8, height = 4)
 
 
