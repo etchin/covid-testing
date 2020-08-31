@@ -22,7 +22,7 @@ testing_sim <- function(sim_pop,
     n.w.sx <- 0
     n.w.i <- sim_pop[State %in% c(1,2) & DayInObs == 0]
     if(nrow(n.w.i) > 0){
-      n.w.i$infectiousness <- sapply(n.w.i$DayOfInfection, function(x) calc_infectiousness(t - x, if_weights))
+      n.w.i$infectiousness <- sapply(n.w.i$DayOfInfection, function(x) calc_infectiousness(t - x + 1, if_weights))
       setindex(n.w.i, NULL)
       n.w.asx <- n.w.i[InfectionType == 0, infectiousness] # Asymptomatic
       n.w.sx <-  n.w.i[InfectionType == 1 & State == 1, infectiousness] # No symptomatic workers

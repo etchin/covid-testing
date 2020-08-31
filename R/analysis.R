@@ -122,13 +122,15 @@ ggplot(estimatedR %>%
   geom_ribbon(aes(ymin = R0.Q1, ymax = R0.Q3), alpha= 0.75) +
   geom_line() +
   geom_hline(yintercept = 1, size = 1.5, linetype = "dashed") + 
-  scale_fill_gradient(low = "#355C7D",
+  scale_fill_gradient (low = "#355C7D",
                       high = "#F67280",
-                      guide = "legend") + 
+                      guide = "legend",
+                      n.breaks = 3) + 
   theme_minimal(base_size = 20) +
   xlab("Testing frequency (days)") +
-  ylab("R_0") +
+  ylab(expression(R[0])) +
+  labs(fill = expression(atop("Workplace R" [0],"under no testing"))) +
   scale_x_continuous(breaks = c(0,10,20,30), labels = c("Daily","10","20","Monthly"))
-ggsave("figures/estimated_Re.pdf")
+ggsave("figures/estimated_Re.pdf", width = 8, height = 4)
 
 
