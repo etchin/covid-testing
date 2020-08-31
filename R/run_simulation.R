@@ -4,6 +4,7 @@ require(tidyr)
 require(dplyr)
 require(data.table)
 
+source("R/initialize_params.R")
 source("R/utils.R")
 source("R/transmission.R")
 source("R/testing.R")
