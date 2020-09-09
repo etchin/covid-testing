@@ -1,3 +1,6 @@
+.DS_Store
+.Rhistory
+covid-testing.Rproj
 output*
 *.out
 data/work*
