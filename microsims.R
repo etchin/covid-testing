@@ -70,6 +70,10 @@ get.seed.alpha <- function(x) {
 
 sys_vars <- Sys.getenv(c("SLURM_JOB_ID", "SLURM_ARRAY_TASK_ID"))
 
+n_job_seed <- get.seed.alpha(paste0(sys_vars))
+if(is.na(n_job_seed)) n_job_seed <- round(as.numeric(Sys.time()))
+
+set.seed(n_job_seed)
 
 plan(multiprocess, workers = availableCores()-1, gc = TRUE) ## Parallelize using 15 processes
 
@@ -105,7 +109,7 @@ for(tf in tf_array){
 
 comment <- paste0("#", paste(arg_names,args[1:length(arg_names)], sep=":", collapse=","))
 
-out_fi <- paste0("output/sim_pop_", sys_vars["SLURM_JOB_ID"], "_",
+out_fi <- paste0(out_dir, "/sim_pop_", sys_vars["SLURM_JOB_ID"], "_",
                  sys_vars["SLURM_ARRAY_TASK_ID"], ".csv")
 print(paste0("Writing to ", out_fi))
 con <- file(out_fi, open="wt")

@@ -12,7 +12,7 @@ n.contacts <- 10 # daily contacts
 alpha.a <- 0.5
 p.a <- 0.4
 n_sims <- 100
-p.community <- 5000/1e6  #proportion of community that is infected
+p.community <- 1000/1e7  #proportion of community that is infected
 alpha.late.c <- 0.25 #proportion of symptomatic community that self isolates
 
 hosp.delay <- 4 # days since symptom onset
@@ -24,3 +24,4 @@ alpha.a <- 0.5
 
 beta.t <- 0.3489 # Calculated using ngm
 
+out_dir <- "output_p01"
