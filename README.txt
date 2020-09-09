@@ -1,6 +1,6 @@
 Frequency of testing in the workplace
 
-]The risk multiplier is defined as an increase between worker-community contacts. We calculate the risk multiplier necessary to bring the workplace R0 to 1.5, 2, and 2.5.
+The risk multiplier is defined as an increase between worker-community contacts. We calculate the risk multiplier necessary to bring the workplace R0 to 1.5, 2, and 2.5.
 
 Rscript microsims.R <risk> <delay> <sensitivity> <sensitivity  multiplier>
 
